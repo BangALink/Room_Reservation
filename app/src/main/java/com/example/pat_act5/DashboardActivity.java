@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -14,7 +16,8 @@ import androidx.cardview.widget.CardView;
 public class DashboardActivity extends AppCompatActivity {
 
     private TextView tvWelcome;
-    private CardView cardViewRooms, cardMakeReservation, cardMyReservations, cardFeedback;
+    private CardView cardViewRooms, cardMakeReservation, cardMyReservations, cardCheckIn, cardFeedback;
+    private ImageView tvLogout;
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -30,6 +33,13 @@ public class DashboardActivity extends AppCompatActivity {
         tvWelcome.setText("Welcome, " + userName + "!");
 
         // Set click listeners
+        tvLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logout();
+            }
+        });
+
         cardViewRooms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,6 +61,13 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
 
+        cardCheckIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(DashboardActivity.this, CheckInActivity.class));
+            }
+        });
+
         cardFeedback.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -59,11 +76,13 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    private void initViews() {
-        tvWelcome = findViewById(R.id.tvWelcome);
+private void initViews() {
+        tvWelcome = findViewById(R.id.tvUserName);
+        tvLogout = findViewById(R.id.tvLogout);
         cardViewRooms = findViewById(R.id.cardViewRooms);
         cardMakeReservation = findViewById(R.id.cardMakeReservation);
         cardMyReservations = findViewById(R.id.cardMyReservations);
+        cardCheckIn= findViewById(R.id.cardCheckIn);
         cardFeedback = findViewById(R.id.cardFeedback);
     }
 

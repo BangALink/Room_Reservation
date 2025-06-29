@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -48,8 +49,6 @@ public class MakeReservationActivity extends AppCompatActivity {
     private ArrayAdapter<String> roomAdapter;
 
     private Calendar selectedDate, startTime, endTime;
-
-    private static final String BASE_URL = "http://192.168.1.100:4000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,36 +111,47 @@ public class MakeReservationActivity extends AppCompatActivity {
     }
 
     private void loadRooms() {
-        String url = BASE_URL + "/app/api/rooms";
+        String url = ApiConfig.ROOMS_URL;
         String token = sharedPreferences.getString("token", "");
 
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONArray>() {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject response) {
+                        Log.d("API_RESPONSE", "Raw response: " + response.toString());
                         roomList.clear();
                         List<String> roomNames = new ArrayList<>();
 
                         try {
-                            for (int i = 0; i < response.length(); i++) {
-                                JSONObject roomObj = response.getJSONObject(i);
+                            if (response.has("rooms")) {
+                                JSONArray roomsArray = response.getJSONArray("rooms");
 
-                                Room room = new Room();
-                                room.setRoomId(roomObj.getString("room_id"));
-                                room.setName(roomObj.getString("name"));
-                                room.setCapacity(roomObj.getInt("capacity"));
-                                room.setStatus(roomObj.getString("status"));
+                                for (int i = 0; i < roomsArray.length(); i++) {
+                                    JSONObject roomObj = roomsArray.getJSONObject(i);
 
-                                roomList.add(room);
-                                roomNames.add(room.getName() + " (ID: " + room.getRoomId() + ")");
+                                    Room room = new Room();
+                                    room.setRoomId(roomObj.getString("room_id"));
+                                    room.setName(roomObj.getString("name"));
+                                    room.setCapacity(roomObj.getInt("capacity"));
+                                    room.setStatus(roomObj.getString("status"));
+
+                                    roomList.add(room);
+                                    roomNames.add(room.getName() + " (ID: " + room.getRoomId() + ")");
+                                }
+
+                                // Setup spinner adapter
+                                roomAdapter = new ArrayAdapter<>(MakeReservationActivity.this,
+                                        android.R.layout.simple_spinner_item, roomNames);
+                                roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                spinnerRooms.setAdapter(roomAdapter);
+
+                            } else {
+                                Log.e("JSON_ERROR", "Key 'rooms' not found in response");
+                                Toast.makeText(MakeReservationActivity.this, "Invalid response format", Toast.LENGTH_SHORT).show();
                             }
 
-                            roomAdapter = new ArrayAdapter<>(MakeReservationActivity.this,
-                                    android.R.layout.simple_spinner_item, roomNames);
-                            roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            spinnerRooms.setAdapter(roomAdapter);
-
                         } catch (JSONException e) {
+                            Log.e("JSON_ERROR", "Error parsing room data: " + e.getMessage());
                             e.printStackTrace();
                             Toast.makeText(MakeReservationActivity.this, "Error parsing room data", Toast.LENGTH_SHORT).show();
                         }
@@ -150,6 +160,7 @@ public class MakeReservationActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        Log.e("VOLLEY_ERROR", "Error loading rooms: " + error.toString());
                         Toast.makeText(MakeReservationActivity.this, "Error loading rooms: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }) {
@@ -232,21 +243,50 @@ public class MakeReservationActivity extends AppCompatActivity {
         int selectedRoomIndex = spinnerRooms.getSelectedItemPosition();
         Room selectedRoom = roomList.get(selectedRoomIndex);
 
-        String userEmail = sharedPreferences.getString("email", "");
+        // Debug SharedPreferences - coba beberapa kemungkinan key
+        String user_id = sharedPreferences.getString("user_id", "");
+        String userId = sharedPreferences.getString("userId", ""); // alternatif key
+        String _id = sharedPreferences.getString("_id", ""); // alternatif key lain
+        String token = sharedPreferences.getString("token", "");
+
+        // Enhanced logging untuk debugging
+        Log.d("RESERVATION_DEBUG", "=== SharedPreferences Debug ===");
+        Log.d("RESERVATION_DEBUG", "user_id: " + user_id);
+        Log.d("RESERVATION_DEBUG", "userId: " + userId);
+        Log.d("RESERVATION_DEBUG", "_id: " + _id);
+        Log.d("RESERVATION_DEBUG", "All SharedPreferences keys: " + sharedPreferences.getAll().keySet());
+        Log.d("RESERVATION_DEBUG", "Room ID: " + selectedRoom.getRoomId());
+        Log.d("RESERVATION_DEBUG", "Date: " + date);
+        Log.d("RESERVATION_DEBUG", "Start Time: " + startTimeStr);
+        Log.d("RESERVATION_DEBUG", "End Time: " + endTimeStr);
+        Log.d("RESERVATION_DEBUG", "Token: " + (token.isEmpty() ? "EMPTY" : "EXISTS"));
+
+        // Pilih user_id yang tidak kosong
+        String finalUserId = "";
+        if (!user_id.isEmpty()) {
+            finalUserId = user_id;
+        } else if (!userId.isEmpty()) {
+            finalUserId = userId;
+        } else if (!_id.isEmpty()) {
+            finalUserId = _id;
+        }
+
+        Log.d("RESERVATION_DEBUG", "Final User ID: " + finalUserId);
 
         JSONObject reservationData = new JSONObject();
         try {
-            reservationData.put("user_id", userEmail);
+            reservationData.put("user_id", finalUserId);
             reservationData.put("room_id", selectedRoom.getRoomId());
             reservationData.put("date", date);
             reservationData.put("start_time", startTimeStr);
             reservationData.put("end_time", endTimeStr);
+            Log.d("RESERVATION_DEBUG", "Request Body: " + reservationData.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        String url = BASE_URL + "/app/api/reservation";
-        String token = sharedPreferences.getString("token", "");
+        String url = ApiConfig.RESERVATION_URL;
+        Log.d("RESERVATION_DEBUG", "Request URL: " + url);
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, reservationData,
                 new Response.Listener<JSONObject>() {

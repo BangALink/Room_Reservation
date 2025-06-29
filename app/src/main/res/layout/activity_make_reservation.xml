@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_light">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary_color"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:title="Make Reservation"
+        app:titleTextColor="@android:color/white" />
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <!-- Spinner for Room Selection -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select Room"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/black" />
+
+            <Spinner
+                android:id="@+id/spinnerRooms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Date Selection -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select Date"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="yyyy-MM-dd"
+                android:focusable="false"
+                android:clickable="false"
+                android:inputType="none"
+                android:minHeight="48dp"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btnSelectDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pick Date"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Start Time -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Start Time"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etStartTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="HH:mm"
+                android:focusable="false"
+                android:clickable="false"
+                android:inputType="none"
+                android:minHeight="48dp"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btnSelectStartTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pick Start Time"
+                android:layout_marginBottom="16dp" />
+
+            <!-- End Time -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="End Time"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etEndTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="HH:mm"
+                android:focusable="false"
+                android:clickable="false"
+                android:inputType="none"
+                android:minHeight="48dp"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btnSelectEndTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pick End Time"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Submit Button -->
+            <Button
+                android:id="@+id/btnMakeReservation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Make Reservation"
+                android:backgroundTint="@color/primary_color"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

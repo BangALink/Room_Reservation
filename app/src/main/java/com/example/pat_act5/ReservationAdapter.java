@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,11 +40,17 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     private RequestQueue requestQueue;
     private SharedPreferences sharedPreferences;
 
-    private static final String BASE_URL = "http://192.168.1.100:4000";
+    public interface OnReservationClickListener {
+        void onReservationClick(Reservation reservation);
+    }
 
-    public ReservationAdapter(List<Reservation> reservationList, Context context) {
+    private OnReservationClickListener listener;
+
+
+    public ReservationAdapter(List<Reservation> reservationList, Context context, OnReservationClickListener listener) {
         this.reservationList = reservationList;
         this.context = context;
+        this.listener = listener;
         this.requestQueue = Volley.newRequestQueue(context);
         this.sharedPreferences = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
     }
@@ -56,14 +63,14 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ReservationViewHolder holder, int position) {
-        Reservation reservation = reservationList.get(position);
+        public void onBindViewHolder(@NonNull ReservationViewHolder holder, int position) {
+            Reservation reservation = reservationList.get(position);
 
-        holder.tvReservationId.setText("ID: " + reservation.getReservationId());
-        holder.tvRoomName.setText(reservation.getRoomName());
-        holder.tvDate.setText("Date: " + reservation.getDate());
-        holder.tvTime.setText("Time: " + reservation.getTimeRange());
-        holder.tvStatus.setText("Status: " + reservation.getStatus());
+            holder.tvReservationId.setText("ID: " + reservation.getReservationId());
+            holder.tvRoomName.setText(reservation.getRoomName());
+            holder.tvDate.setText("Date: " + reservation.getDate());
+            holder.tvTime.setText("Time: " + reservation.getTimeRange());
+            holder.tvStatus.setText("Status: " + reservation.getStatus());
 
         // Set status color
         if (reservation.getStatus().equals("Reserved")) {
@@ -89,22 +96,31 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         holder.btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showCancelDialog(reservation, position);
+                int currentPosition = holder.getAdapterPosition();
+                if (currentPosition != RecyclerView.NO_POSITION) {
+                    Reservation currentReservation = reservationList.get(currentPosition);
+                    showCancelDialog(currentReservation, currentPosition);
+                }
             }
         });
 
         holder.btnCheckIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkIn(reservation, position);
+                int currentPosition = holder.getAdapterPosition();
+                if (currentPosition != RecyclerView.NO_POSITION) {
+                    Reservation currentReservation = reservationList.get(currentPosition);
+                    checkIn(currentReservation, currentPosition);
+                }
             }
         });
 
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Show reservation details
-                showReservationDetails(reservation);
+                if (listener != null) {
+                    listener.onReservationClick(reservation);
+                }
             }
         });
     }
@@ -129,8 +145,13 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     }
 
     private void cancelReservation(Reservation reservation, int position) {
-        String url = BASE_URL + "/app/api/reservation/" + reservation.getReservationId();
+        String url = ApiConfig.RESERVATION_URL + "/" + reservation.getReservationId();
         String token = sharedPreferences.getString("token", "");
+
+        if (token.isEmpty()) {
+            Toast.makeText(context, "No authentication token found", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, url, null,
                 new Response.Listener<JSONObject>() {
@@ -151,7 +172,23 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(context, "Failed to cancel reservation", Toast.LENGTH_SHORT).show();
+                        Log.e("ReservationAdapter", "Cancel error: " + error.toString());
+
+                        String errorMessage = "Failed to cancel reservation";
+                        if (error.networkResponse != null) {
+                            int statusCode = error.networkResponse.statusCode;
+                            errorMessage += " (HTTP " + statusCode + ")";
+
+                            // Try to get error message from response
+                            try {
+                                String responseBody = new String(error.networkResponse.data, "utf-8");
+                                Log.e("ReservationAdapter", "Error response: " + responseBody);
+                            } catch (Exception e) {
+                                Log.e("ReservationAdapter", "Could not parse error response", e);
+                            }
+                        }
+
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
                     }
                 }) {
             @Override
@@ -172,35 +209,58 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         try {
             checkInData.put("user_id", userEmail);
             checkInData.put("reservation_id", reservation.getReservationId());
+            Log.d("ReservationAdapter", "CheckIn Data: " + checkInData.toString());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("ReservationAdapter", "JSON creation error", e);
+            return;
         }
 
-        String url = BASE_URL + "/app/api/checkin";
+        String url = ApiConfig.CHECKIN_URL;
         String token = sharedPreferences.getString("token", "");
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, checkInData,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.d("ReservationAdapter", "CheckIn Response: " + response.toString());
                         try {
                             String status = response.getString("status");
                             if (status.equals("Occupied")) {
                                 reservation.setStatus("Occupied");
                                 notifyItemChanged(position);
                                 Toast.makeText(context, "Check-in successful", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context, "Unexpected status: " + status, Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.e("ReservationAdapter", "JSON parsing error", e);
+                            Toast.makeText(context, "Response parsing error", Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(context, "Check-in failed", Toast.LENGTH_SHORT).show();
+                        Log.e("ReservationAdapter", "CheckIn error: " + error.toString());
+
+                        String errorMessage = "Check-in failed";
+                        if (error.networkResponse != null) {
+                            int statusCode = error.networkResponse.statusCode;
+                            errorMessage += " (HTTP " + statusCode + ")";
+
+                            // Try to get error message from response
+                            try {
+                                String responseBody = new String(error.networkResponse.data, "utf-8");
+                                Log.e("ReservationAdapter", "Error response: " + responseBody);
+                            } catch (Exception e) {
+                                Log.e("ReservationAdapter", "Could not parse error response", e);
+                            }
+                        }
+
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
                     }
                 }) {
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers = new HashMap<>();

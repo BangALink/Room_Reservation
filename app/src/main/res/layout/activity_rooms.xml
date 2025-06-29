@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_light"
+    tools:context=".RoomsActivity">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary_color"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:title="Available Rooms"
+        app:titleTextColor="@android:color/white" />
+
+    <!-- FrameLayout allows the ProgressBar to be overlaid on top of the RecyclerView -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- RecyclerView to display the list of rooms -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewRooms"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            android:contentDescription="List of available rooms"
+            tools:listitem="@layout/item_room" /> <!-- 'item_room' would be your custom layout for a single row -->
+
+        <!-- ProgressBar to show while loading data -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible" /> <!-- Initially visible, hide it in code once data is loaded -->
+
+    </FrameLayout>
 
 </LinearLayout>

@@ -54,7 +54,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.RoomViewHolder
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, RoomDetailActivity.class);
+                Intent intent = new Intent(context, RoomsActivity.class);
                 intent.putExtra("room_id", room.getRoomId());
                 intent.putExtra("room_name", room.getName());
                 intent.putExtra("capacity", room.getCapacity());
@@ -68,6 +68,23 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.RoomViewHolder
     @Override
     public int getItemCount() {
         return roomList.size();
+    }
+    // Method to update a specific room's status
+
+    public void updateRoomList(List<Room> newRoomList) {
+        this.roomList.clear();
+        this.roomList.addAll(newRoomList);
+        notifyDataSetChanged();
+    }
+    public void updateRoomStatus(String roomId, String newStatus) {
+        for (int i = 0; i < roomList.size(); i++) {
+            Room room = roomList.get(i);
+            if (room.getRoomId().equals(roomId)) {
+                room.setStatus(newStatus);
+                notifyItemChanged(i);
+                break;
+            }
+        }
     }
 
     public static class RoomViewHolder extends RecyclerView.ViewHolder {

@@ -1,6 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardViewReservation"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true">
 
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvReservationId"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ID: R001"
+                android:textSize="12sp"
+                android:textColor="@android:color/darker_gray"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status: Reserved"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/holo_blue_dark"
+                android:background="@drawable/status_confirmed_background"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp" />
+
+        </LinearLayout>
+
+        <!-- Room Name -->
+        <TextView
+            android:id="@+id/tvRoomName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Meeting Room A"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Date and Time Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Date: 2024-01-15"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/black"
+                    android:drawableStart="@android:drawable/ic_menu_today"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Time: 09:00-11:00"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/black"
+                    android:drawableStart="@android:drawable/ic_menu_recent_history"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Cancel"
+                android:textSize="12sp"
+                android:textColor="@android:color/holo_red_dark"
+                android:background="@drawable/button_cancel_background"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="16dp"
+                android:minWidth="0dp"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/btnCheckIn"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Check In"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:background="@drawable/button_check_in_background"
+                android:paddingHorizontal="16dp"
+                android:minWidth="0dp"
+                android:visibility="visible" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

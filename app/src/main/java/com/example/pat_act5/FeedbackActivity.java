@@ -75,7 +75,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
         // Display room and reservation info
         tvRoomName.setText(roomName);
-        String reservationInfo = "Date: " + DateTimeUtils.formatDate(date) +
+        String reservationInfo = "Date: " + DateTimeUtils.formatDateForDisplay(date) +
                 "\nTime: " + startTime + " - " + endTime;
         if (reservationId != null && !reservationId.isEmpty()) {
             reservationInfo += "\nReservation ID: " + reservationId;
@@ -120,7 +120,7 @@ public class FeedbackActivity extends AppCompatActivity {
             return;
         }
 
-        String url = ApiConfig.BASE_URL + "/feedback";
+        String url = ApiConfig.FEEDBACK_URL;
 
         JSONObject jsonBody = new JSONObject();
         try {

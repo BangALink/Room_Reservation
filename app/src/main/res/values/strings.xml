@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">PAT_Act5</string>
+    <string name="desc_reservation_list">List of your room reservations</string>
+    <string name="desc_room_list">List of rooms</string>
+    <string name="room_icon">Room icon</string>
+    <string name="date_icon">Date icon</string>
+    <string name="time_icon">Time icon</string>
 </resources>

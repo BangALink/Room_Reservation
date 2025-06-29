@@ -29,8 +29,6 @@ public class RegisterActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
     private SharedPreferences sharedPreferences;
 
-    private static final String BASE_URL = "http://192.168.1.100:4000"; // Sesuaikan dengan IP server
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +59,7 @@ public class RegisterActivity extends AppCompatActivity {
         etName = findViewById(R.id.etName);
         etDepartment = findViewById(R.id.etDepartment);
         btnRegister = findViewById(R.id.btnRegister);
-        tvLoginLink = findViewById(R.id.tvLoginLink);
+        tvLoginLink = findViewById(R.id.tvLogin);
     }
 
     private void register() {
@@ -85,7 +83,7 @@ public class RegisterActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        String url = BASE_URL + "/app/api/auth/register";
+        String url = ApiConfig.REGISTER_URL;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, registerData,
                 new Response.Listener<JSONObject>() {

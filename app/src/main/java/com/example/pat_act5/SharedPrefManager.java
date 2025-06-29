@@ -2,6 +2,7 @@ package com.example.pat_act5;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 public class SharedPrefManager {
     private static final String SHARED_PREF_NAME = "RoomReservationPrefs";
@@ -16,8 +17,10 @@ public class SharedPrefManager {
     private static SharedPrefManager instance;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+    private Context context;
 
     private SharedPrefManager(Context context) {
+        this.context = context;
         sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
@@ -47,7 +50,10 @@ public class SharedPrefManager {
     }
 
     public String getToken() {
-        return sharedPreferences.getString(KEY_TOKEN, null);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        String token = sharedPreferences.getString(KEY_TOKEN, null);
+        Log.d("SharedPrefManager", "Getting token: " + (token != null ? "EXISTS" : "NULL"));
+        return token;
     }
 
     public String getUserId() {
@@ -70,8 +76,25 @@ public class SharedPrefManager {
         return sharedPreferences.getString(KEY_USER_DEPARTMENT, null);
     }
 
+    public User getUser() {
+        return new User(
+                getUserId(),
+                getUserEmail(),
+                getUserName(),
+                getUserDepartment(),
+                getUserRole()
+        );
+    }
+
+
     public boolean isLoggedIn() {
         return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
+    }
+
+    // Clear all data (logout)
+    public void clear() {
+        editor.clear();
+        editor.apply();
     }
 
     public void logout() {

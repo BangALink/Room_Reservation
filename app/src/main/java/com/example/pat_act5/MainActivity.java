@@ -2,6 +2,7 @@ package com.example.pat_act5;
 
 import android.os.Bundle;
 
+import android.util.Base64;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -31,13 +32,10 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
-    private Button btnLogin, btnRegister;
+    private Button btnLogin;
     private TextView tvRegisterLink;
     private RequestQueue requestQueue;
     private SharedPreferences sharedPreferences;
-
-    // Server URL - Ganti dengan IP address server Anda
-    private static final String BASE_URL = "http://192.168.1.100:4000"; // Sesuaikan dengan IP server
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
+        etEmail = findViewById(R.id.Email);
+        etPassword = findViewById(R.id.Password);
         btnLogin = findViewById(R.id.btnLogin);
-        tvRegisterLink = findViewById(R.id.tvRegisterLink);
+        tvRegisterLink = findViewById(R.id.Register);
     }
 
     private void checkLoginStatus() {
@@ -99,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        String url = BASE_URL + "/app/api/auth/login";
+        String url = ApiConfig.LOGIN_URL;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, loginData,
                 new Response.Listener<JSONObject>() {
@@ -108,12 +106,14 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             String token = response.getString("token");
                             String role = response.getString("role");
+                            String userId = extractUserIdFromToken(token);
 
                             // Save token and user info
                             SharedPreferences.Editor editor = sharedPreferences.edit();
                             editor.putString("token", token);
                             editor.putString("email", email);
                             editor.putString("role", role);
+                            editor.putString("userId", userId);
                             editor.apply();
 
                             Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
@@ -136,5 +136,46 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         requestQueue.add(request);
+    }
+
+    /**
+     * Extract userId from JWT token payload
+     * @param token JWT token
+     * @return userId string
+     */
+    private String extractUserIdFromToken(String token) {
+        try {
+            // Split token into parts (header.payload.signature)
+            String[] tokenParts = token.split("\\.");
+            if (tokenParts.length >= 2) {
+                // Decode payload (second part)
+                String payload = tokenParts[1];
+
+                // Add padding if needed for Base64 decoding
+                while (payload.length() % 4 != 0) {
+                    payload += "=";
+                }
+
+                // Decode Base64
+                byte[] decodedBytes = Base64.decode(payload, Base64.URL_SAFE);
+                String decodedPayload = new String(decodedBytes);
+
+                // Parse JSON to get userId
+                JSONObject payloadJson = new JSONObject(decodedPayload);
+                return payloadJson.getString("userId");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ""; // Return empty string if extraction fails
+    }
+
+    /**
+     * Utility method to get saved userId from SharedPreferences
+     * This can be called from other activities
+     */
+    public static String getSavedUserId(SharedPreferences sharedPreferences) {
+        return sharedPreferences.getString("userId", "");
     }
 }
